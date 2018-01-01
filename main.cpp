@@ -130,50 +130,90 @@ void wczytajUzytkownikowZPliku(vector <Uzytkownik> &uzytkownicy)
 }
 
 
-int logowanie(Uzytkownik uzytkownicy[], int iloscUzytkownikow)
+int logowanieUzytkownika(vector <Uzytkownik> &uzytkownicy)
 {
     string nazwaUzytkownika, hasloUzytkownika;
-    cout<< "Podaj nazwe: ";
-    cin>>  nazwaUzytkownika;
-    int i =0;
-    /*  while (i<iloscUzytkownikow)
-      {
-          if(uzytkownicy[i].nazwa==nazwa)
-          {
-              for(int proby=0; proby<3; proby++)
-              {
-                  cout<<"Podaj haslo. Pozostalo prob "<<3-proby<< ":";
-                  cin>> haslo;
-                  if (uzytkownicy[i].haslo==haslo)
-                  {
-                      cout<< "Zalogowales sie."<<endl;
-                      Sleep(1000);
-                      return uzytkownicy[i].idUzytkownik;
-                  }
-              }
-              cout<<"Podales 3 razy bledne haslo.Poczekaj przez 3 sekundy przed kolejna proba"<<endl;
-              Sleep(3000);
-          }
-          i++;
-      }
-      cout<< "Nie ma uzytkownika z takim loginem"<<endl;
-      Sleep(1500);*/
+    bool znalezionyUzytkownik = 0;
+    int proby = 0;
+    cout << "Podaj nazwe uzytkownika: ";
+    cin >>  nazwaUzytkownika;
+
+    for (vector <Uzytkownik>::iterator itr = uzytkownicy.begin(); itr != uzytkownicy.end(); itr++)
+    {
+        if(itr -> nazwa == nazwaUzytkownika)
+        {
+            znalezionyUzytkownik = 1;
+            for(int iloscProb = 0; iloscProb < 3; iloscProb++)
+            {
+                proby = iloscProb + 1;
+                cout << "Podaj haslo. Pozostalo prob " << 3 - iloscProb << ":";
+                cin >> hasloUzytkownika;
+                if (itr -> haslo == hasloUzytkownika)
+                {
+                    cout<< "Zalogowales sie."<<endl;
+                    return itr -> idUzytkownika;
+                }
+            }
+            if( proby == 3)
+            {
+               cout << "Podales 3 razy bledne haslo.Poczekaj przez 3 sekundy przed kolejna proba." << endl;
+            }
+        }
+    }
+
+    if(!znalezionyUzytkownik)   //jesli zmienna Znaleziony_znajomy==0
+    {
+        cout << "Nie ma uzytkownika z takim loginem." << endl;
+    }
+
+    Sleep(1500);
     return 0;
 }
 
-void zmianaHasla(Uzytkownik uzytkownicy[], int iloscUzytkownikow, int idZalogowanegoUzytkownika)
+void zmianaHasla(vector <Uzytkownik> &uzytkownicy, int idZalogowanegoUzytkownika)
 {
-    string haslo;
-    cout<< "Podaj nowe haslo: ";
-    cin>> haslo;
-    for(int i=0; i<iloscUzytkownikow; i++)
+    string hasloUzytkownika;
+    int pozycjaZnalezionejOsoby = 0;
+    cout << "Podaj nowe haslo: ";
+    cin >> hasloUzytkownika;
+
+    for (vector <Uzytkownik>::iterator itr = uzytkownicy.begin(); itr != uzytkownicy.end(); itr++)
     {
-        if(uzytkownicy[i].idUzytkownika==idZalogowanegoUzytkownika)
+        if(itr -> idUzytkownika == idZalogowanegoUzytkownika)
         {
-            uzytkownicy[i].haslo=haslo;
+            uzytkownicy[pozycjaZnalezionejOsoby].haslo = hasloUzytkownika;
             cout << "Haslo zostalo zmienione"<< endl;
             Sleep(1500);
         }
+        pozycjaZnalezionejOsoby++;
+    }
+}
+
+void zapiszDaneUzytkownikowDoPliku (vector <Uzytkownik> &uzytkownicy)
+{
+    fstream plik;
+    string liniaZDanymiUzytkownika = "";
+    plik.open("Uzytkownicy.txt", ios::out);
+
+    if (plik.good() == true)
+    {
+        for (vector <Uzytkownik>::iterator itr = uzytkownicy.begin(); itr != uzytkownicy.end(); itr++)
+        {
+            liniaZDanymiUzytkownika += konwerjsaIntNaString(itr -> idUzytkownika) + '|';
+            liniaZDanymiUzytkownika += itr -> nazwa + '|';
+            liniaZDanymiUzytkownika += itr -> haslo + '|';
+
+            plik << liniaZDanymiUzytkownika << endl;
+            liniaZDanymiUzytkownika = "";
+        }
+        plik.close();
+        cout << "Dane zostaly zapisne." << endl;
+        system("pause");
+    }
+    else
+    {
+        cout << "Nie udalo sie otworzyc pliku i zapisac do niego danych." << endl;
+        system("pause");
     }
 }
 
@@ -203,7 +243,7 @@ int main()
             }
             else if(wybor == '2')
             {
-                //       idZalogowanegoUzytkownika=logowanie(uzytkownicy, iloscUzytkownikow);
+                idZalogowanegoUzytkownika = logowanieUzytkownika(uzytkownicy);
             }
             else if (wybor=='9')
             {
@@ -219,11 +259,12 @@ int main()
 
             if (wybor=='1')
             {
-                //     zmianaHasla(uzytkownicy, iloscUzytkownikow, idZalogowanegoUzytkownika);
+            zmianaHasla(uzytkownicy, idZalogowanegoUzytkownika);
+            zapiszDaneUzytkownikowDoPliku(uzytkownicy);
             }
             else if(wybor == '2')
             {
-                idZalogowanegoUzytkownika=0;
+                idZalogowanegoUzytkownika = 0;
             }
         }
 
