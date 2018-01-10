@@ -24,6 +24,38 @@ string konwerjsaIntNaString (int liczba)
 }
 
 
+void usunLinieZPliku (vector <string> &linieDoUsuniecia)
+{
+    string linia;
+
+    ifstream plik;
+    plik.open ("KsiazkaAdresowa.txt");
+    ofstream nowyPlik;
+    nowyPlik.open("PlikBezLinii.txt");
+    bool znalezionaLinia;
+
+
+     while (getline(plik,linia))
+    {
+        znalezionaLinia = 0;
+        for( int i = 0; i < linieDoUsuniecia.size(); i++ )
+        {
+            if ( linia == linieDoUsuniecia[i] )
+            {
+                znalezionaLinia = 1;
+            }
+
+        }
+        if (znalezionaLinia == 0)
+            nowyPlik << linia << endl;
+
+    }
+    nowyPlik.close();
+    plik.close();
+    remove("KsiazkaAdresowa.txt"); // remove usuwa plik
+    rename("PlikBezLinii.txt","KsiazkaAdresowa.txt");
+}
+
 void zapiszZnajomychUzytkownikaDoWektora (vector <Znajomy> &znajomi, string linia, int iloscZnajomych)
 {
     string wyraz;
@@ -77,6 +109,7 @@ void zapiszZnajomychUzytkownikaDoWektora (vector <Znajomy> &znajomi, string lini
 
 void wczytajZnajomychZPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkownika)
 {
+    vector <string> linieDoUsuniecia;
     string linia;
     string wyraz;
     int iloscPionowychKresek = 0;
@@ -108,15 +141,17 @@ void wczytajZnajomychZPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkow
                     {
                         iloscZnajomych++;
                         zapiszZnajomychUzytkownikaDoWektora(znajomi, linia, iloscZnajomych);
+                        linieDoUsuniecia.push_back(linia);
                         break;
                     }
                     poczatek = poczatek + ileZnakowWyjac + 1;
                 }
             }
-
         }
         plik.close();
     }
+
+    usunLinieZPliku(linieDoUsuniecia);
 
 }
 
@@ -125,7 +160,7 @@ void zapiszDaneZnajomychDoPliku (vector <Znajomy> &znajomi)
 {
     fstream plik;
     string liniaZDanymiZnajomego = "";
-    plik.open("KsiazkaAdresowa.txt", ios::out);
+    plik.open("KsiazkaAdresowa.txt", ios::out | ios::app);
 
     if (plik.good() == true)
     {
@@ -157,6 +192,7 @@ int main()
 {
 
     vector <Znajomy> znajomi;
+
     int idZalogowanegoUzytkownika = 4;
 
     wczytajZnajomychZPliku(znajomi, idZalogowanegoUzytkownika);
