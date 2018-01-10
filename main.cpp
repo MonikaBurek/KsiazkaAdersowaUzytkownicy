@@ -203,6 +203,51 @@ void zapiszDaneUzytkownikowDoPliku (vector <Uzytkownik> &uzytkownicy)
     }
 }
 
+int znajdzKolejnyNumerIDZnajomego ()
+{
+    string linia;
+    string wyraz;
+    int iloscPionowychKresek = 0;
+    int ileZnakowWyjac = 0;
+    int poczatek = 0 ;
+    int najwiekszyNumerID = 0;
+    int aktualnyNumerID = 0;
+    int kolejnyNumerID = 0;
+    fstream plik;
+
+    plik.open("KsiazkaAdresowa.txt",ios::in); // aby otworzyc plik do odczytu
+    if (plik.good() == true)
+    {
+        while (getline(plik,linia))
+        {
+            ileZnakowWyjac = 0;
+            poczatek = 0;
+            iloscPionowychKresek = 0;
+
+            for (int i = 0; i < linia.size(); i++)
+            {
+                ileZnakowWyjac = i - poczatek;
+                if (linia[i] == '|')
+                {
+                    iloscPionowychKresek++;
+                    wyraz = linia.substr (poczatek,ileZnakowWyjac);
+                    aktualnyNumerID= atoi(wyraz.c_str());
+                    if ( iloscPionowychKresek == 1 )
+                    {
+                        if (aktualnyNumerID > najwiekszyNumerID)
+                        {
+                            najwiekszyNumerID = aktualnyNumerID;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    kolejnyNumerID = najwiekszyNumerID + 1;
+    return kolejnyNumerID;
+
+}
+
 void zapiszNowegoZnajomego(vector <Znajomy> &znajomi, int idZalogowanegoUzytkownika)
 {
     string imie, nazwisko, adres, numerTelefonu, mail;
@@ -223,16 +268,7 @@ void zapiszNowegoZnajomego(vector <Znajomy> &znajomi, int idZalogowanegoUzytkown
     cin.sync();
     getline(cin,adres);
 
-    // Do zmiennej typu Znajomy Osoba zapisuje poszczegolne dane
-    if (znajomi.empty() == true)  // je¿eli ksia¿ka adresowa jest pusta
-    {
-        Osoba.numerIDZnajomego = 1;           // to nowy adresat ma id=1
-    }
-    else
-    {
-        Osoba.numerIDZnajomego = znajomi.back().numerIDZnajomego + 1; // w przeciwnym przypadku pobierz id ostatniej osoby z ksi¹¿ki adresowej i zwiêksz wartoœæ o jeden.
-    }
-
+    Osoba.numerIDZnajomego = znajdzKolejnyNumerIDZnajomego();
     Osoba.numerIDUzytkownika = idZalogowanegoUzytkownika;
     Osoba.imie = imie;
     Osoba.nazwisko = nazwisko;
@@ -243,23 +279,21 @@ void zapiszNowegoZnajomego(vector <Znajomy> &znajomi, int idZalogowanegoUzytkown
     znajomi.push_back(Osoba);
 
     fstream plik;
-    plik.open("KsiazkaAdresowa.txt", ios::out);
+    plik.open("KsiazkaAdresowa.txt", ios::app);
 
     if (plik.good() == true)
     {
-        for (vector <Znajomy>::iterator itr = znajomi.begin(); itr != znajomi.end(); itr++)
-        {
-            liniaZDanymiZnajomego += konwerjsaIntNaString(itr -> numerIDZnajomego) + '|';
-            liniaZDanymiZnajomego += konwerjsaIntNaString(itr -> numerIDUzytkownika) + '|';
-            liniaZDanymiZnajomego += itr -> imie + '|';
-            liniaZDanymiZnajomego += itr -> nazwisko + '|';
-            liniaZDanymiZnajomego += itr -> numerTelefonu + '|';
-            liniaZDanymiZnajomego += itr -> mail + '|';
-            liniaZDanymiZnajomego += itr -> adres + '|';
+            liniaZDanymiZnajomego += konwerjsaIntNaString(Osoba.numerIDZnajomego) + '|';
+            liniaZDanymiZnajomego += konwerjsaIntNaString(Osoba.numerIDUzytkownika) + '|';
+            liniaZDanymiZnajomego += Osoba.imie + '|';
+            liniaZDanymiZnajomego += Osoba.nazwisko + '|';
+            liniaZDanymiZnajomego += Osoba.numerTelefonu + '|';
+            liniaZDanymiZnajomego += Osoba.mail + '|';
+            liniaZDanymiZnajomego += Osoba.adres + '|';
 
             plik << liniaZDanymiZnajomego << endl;
             liniaZDanymiZnajomego = "";
-        }
+
         plik.close();
         cout << "Dane zostaly zapisne." << endl;
         system("pause");
@@ -269,27 +303,29 @@ void zapiszNowegoZnajomego(vector <Znajomy> &znajomi, int idZalogowanegoUzytkown
         cout << "Nie udalo sie otworzyc pliku i zapisac do niego danych." << endl;
         system("pause");
     }
+
 }
 
-void wczytajZnajomychZPliku(vector <Znajomy> &znajomi)
+void usunLinieZPliku (int idZalogowanegoUzytkownika)
 {
+    vector <string> linieDoUsuniecia;
     string linia;
     string wyraz;
     int iloscPionowychKresek = 0;
     int ileZnakowWyjac = 0;
     int poczatek = 0 ;
-    int iloscZnajomych = 0;
-    fstream plik;
-    Znajomy pusty;
+    int idUzytkownikaZPliku;
+    bool znalezionaLinia;
 
-    znajomi.clear();
-    plik.open("KsiazkaAdresowa.txt",ios::in); // aby otworzyc plik do odczytu
+    fstream plik;
+    ofstream nowyPlik;
+
+    linieDoUsuniecia.clear();
+    plik.open("KsiazkaAdresowa.txt", ios::in); // aby otworzyc plik do odczytu
     if (plik.good() == true)
     {
         while (getline(plik,linia))
         {
-            znajomi.push_back(pusty);
-            iloscZnajomych++;
             ileZnakowWyjac = 0;
             poczatek = 0;
             iloscPionowychKresek = 0;
@@ -301,28 +337,10 @@ void wczytajZnajomychZPliku(vector <Znajomy> &znajomi)
                 {
                     iloscPionowychKresek++;
                     wyraz = linia.substr (poczatek,ileZnakowWyjac);
-                    switch (iloscPionowychKresek)
+                    idUzytkownikaZPliku = atoi(wyraz.c_str());
+                    if ( iloscPionowychKresek == 2 &&  idZalogowanegoUzytkownika == idUzytkownikaZPliku)
                     {
-                    case 1:
-                        znajomi[iloscZnajomych - 1].numerIDZnajomego = atoi(wyraz.c_str());
-                        break;
-                    case 2:
-                        znajomi[iloscZnajomych - 1].numerIDUzytkownika = atoi(wyraz.c_str());
-                        break;
-                    case 3:
-                        znajomi[iloscZnajomych - 1].imie = wyraz;
-                        break;
-                    case 4:
-                        znajomi[iloscZnajomych - 1].nazwisko = wyraz;
-                        break;
-                    case 5:
-                        znajomi[iloscZnajomych - 1].numerTelefonu = wyraz;
-                        break;
-                    case 6:
-                        znajomi[iloscZnajomych - 1].mail = wyraz;
-                        break;
-                    case 7:
-                        znajomi[iloscZnajomych - 1].adres = wyraz;
+                        linieDoUsuniecia.push_back(linia);
                         break;
                     }
                     poczatek = poczatek + ileZnakowWyjac + 1;
@@ -331,6 +349,128 @@ void wczytajZnajomychZPliku(vector <Znajomy> &znajomi)
         }
         plik.close();
     }
+
+    nowyPlik.open("PlikBezLinii.txt");
+    plik.open("KsiazkaAdresowa.txt",ios::in);
+
+     while (getline(plik,linia))
+    {
+        znalezionaLinia = 0;
+        for( int i = 0; i < linieDoUsuniecia.size(); i++ )
+        {
+            if ( linia == linieDoUsuniecia[i] )
+            {
+                znalezionaLinia = 1;
+            }
+        }
+        if (znalezionaLinia == 0)
+            nowyPlik << linia << endl;
+
+    }
+
+    nowyPlik.close();
+    plik.close();
+    remove("KsiazkaAdresowa.txt"); // remove usuwa plik
+    rename("PlikBezLinii.txt","KsiazkaAdresowa.txt");
+}
+
+void zapiszZnajomychUzytkownikaDoWektora (vector <Znajomy> &znajomi, string linia, int iloscZnajomych)
+{
+    string wyraz;
+    int iloscPionowychKresek = 0;
+    int ileZnakowWyjac = 0;
+    int poczatek = 0 ;
+
+    Znajomy pusty;
+
+    znajomi.push_back(pusty);
+
+    ileZnakowWyjac = 0;
+    poczatek = 0;
+    iloscPionowychKresek = 0;
+
+    for (int i = 0; i < linia.size(); i++)
+    {
+        ileZnakowWyjac = i - poczatek;
+        if (linia[i] == '|')
+        {
+            iloscPionowychKresek++;
+            wyraz = linia.substr (poczatek,ileZnakowWyjac);
+            switch (iloscPionowychKresek)
+            {
+            case 1:
+                znajomi[iloscZnajomych - 1].numerIDZnajomego = atoi(wyraz.c_str());
+                break;
+            case 2:
+                znajomi[iloscZnajomych - 1].numerIDUzytkownika = atoi(wyraz.c_str());
+                break;
+            case 3:
+                znajomi[iloscZnajomych - 1].imie = wyraz;
+                break;
+            case 4:
+                znajomi[iloscZnajomych - 1].nazwisko = wyraz;
+                break;
+            case 5:
+                znajomi[iloscZnajomych - 1].numerTelefonu = wyraz;
+                break;
+            case 6:
+                znajomi[iloscZnajomych - 1].mail = wyraz;
+                break;
+            case 7:
+                znajomi[iloscZnajomych - 1].adres = wyraz;
+                break;
+            }
+            poczatek = poczatek + ileZnakowWyjac + 1;
+        }
+    }
+}
+
+
+void wczytajZnajomychZPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkownika)
+{
+
+    string linia;
+    string wyraz;
+    int iloscPionowychKresek = 0;
+    int ileZnakowWyjac = 0;
+    int poczatek = 0 ;
+    int idUzytkownikaZPliku = 0;
+    int iloscZnajomych = 0;
+    fstream plik;
+
+    znajomi.clear();
+    plik.open("KsiazkaAdresowa.txt",ios::in); // aby otworzyc plik do odczytu
+    if (plik.good() == true)
+    {
+        while (getline(plik,linia))
+        {
+            ileZnakowWyjac = 0;
+            poczatek = 0;
+            iloscPionowychKresek = 0;
+
+            for (int i = 0; i < linia.size(); i++)
+            {
+                ileZnakowWyjac = i - poczatek;
+                if (linia[i] == '|')
+                {
+                    iloscPionowychKresek++;
+                    wyraz = linia.substr (poczatek,ileZnakowWyjac);
+                    idUzytkownikaZPliku = atoi(wyraz.c_str());
+                    if ( iloscPionowychKresek == 2 &&  idZalogowanegoUzytkownika == idUzytkownikaZPliku)
+                    {
+                        iloscZnajomych++;
+                        zapiszZnajomychUzytkownikaDoWektora(znajomi, linia, iloscZnajomych);
+                        //linieDoUsuniecia.push_back(linia);
+                        break;
+                    }
+                    poczatek = poczatek + ileZnakowWyjac + 1;
+                }
+            }
+        }
+        plik.close();
+    }
+    //usunLinieZPliku(linieDoUsuniecia);
+    //zapiszDaneZnajomychDoPlikuNaPoczatku(znajomi);
 }
 
 void wyswietlWszystkichZnajomych(vector <Znajomy> &znajomi)
@@ -508,12 +648,15 @@ void usunKontakt (vector <Znajomy> &znajomi)
     }
 }
 
-void zapiszDaneZnajomychDoPliku (vector <Znajomy> &znajomi)
+void zapiszDaneZnajomychDoPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkownika)
 {
     fstream plik;
     string liniaZDanymiZnajomego = "";
-    plik.open("KsiazkaAdresowa.txt", ios::out);
 
+
+    usunLinieZPliku(idZalogowanegoUzytkownika);
+
+    plik.open("KsiazkaAdresowa.txt", ios::out | ios::app);
     if (plik.good() == true)
     {
         for (vector <Znajomy>::iterator itr = znajomi.begin(); itr != znajomi.end(); itr++)
@@ -567,7 +710,6 @@ int main()
     int idZalogowanegoUzytkownika = 0;
 
     wczytajUzytkownikowZPliku(uzytkownicy);
-    wczytajZnajomychZPliku(znajomi);
 
     char wybranaPozycjaMenu;
 
@@ -597,7 +739,7 @@ int main()
         }
         else
         {
-            wczytajZnajomychZPliku(znajomi);
+            wczytajZnajomychZPliku(znajomi, idZalogowanegoUzytkownika);
             system("cls");
             cout<< "Ksiazka adresowa."<<endl<<endl;
             cout << "1.Zapisz nowego znajomego." << endl;
@@ -640,11 +782,11 @@ int main()
                 break;
             case '4':
                 edytujKontakt(znajomi);
-                zapiszDaneZnajomychDoPliku(znajomi);
+                zapiszDaneZnajomychDoPliku(znajomi, idZalogowanegoUzytkownika);
                 break;
             case '5':
                 usunKontakt(znajomi);
-                zapiszDaneZnajomychDoPliku(znajomi);
+                zapiszDaneZnajomychDoPliku(znajomi, idZalogowanegoUzytkownika);
                 break;
             case '6':
                 zmianaHasla(uzytkownicy, idZalogowanegoUzytkownika);
