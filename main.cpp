@@ -17,7 +17,7 @@ struct Uzytkownik
 
 struct Znajomy
 {
-    int numerIDZnajomego,numerIDUzytkownika;
+    int numerIDZnajomego, numerIDUzytkownika;
     string imie, nazwisko, numerTelefonu, mail, adres;
 };
 
@@ -230,8 +230,8 @@ int znajdzKolejnyNumerIDZnajomego ()
                 if (linia[i] == '|')
                 {
                     iloscPionowychKresek++;
-                    wyraz = linia.substr (poczatek,ileZnakowWyjac);
-                    aktualnyNumerID= atoi(wyraz.c_str());
+                    wyraz = linia.substr (poczatek, ileZnakowWyjac);
+                    aktualnyNumerID = atoi(wyraz.c_str());
                     if ( iloscPionowychKresek == 1 )
                     {
                         if (aktualnyNumerID > najwiekszyNumerID)
@@ -338,7 +338,7 @@ void usunLinieZPliku (int idZalogowanegoUzytkownika)
                     iloscPionowychKresek++;
                     wyraz = linia.substr (poczatek,ileZnakowWyjac);
                     idUzytkownikaZPliku = atoi(wyraz.c_str());
-                    if ( iloscPionowychKresek == 2 &&  idZalogowanegoUzytkownika == idUzytkownikaZPliku)
+                    if ( iloscPionowychKresek == 2 && idZalogowanegoUzytkownika == idUzytkownikaZPliku)
                     {
                         linieDoUsuniecia.push_back(linia);
                         break;
@@ -351,14 +351,14 @@ void usunLinieZPliku (int idZalogowanegoUzytkownika)
     }
 
     nowyPlik.open("PlikBezLinii.txt");
-    plik.open("KsiazkaAdresowa.txt",ios::in);
+    plik.open("KsiazkaAdresowa.txt", ios::in);
 
      while (getline(plik,linia))
     {
         znalezionaLinia = 0;
         for( int i = 0; i < linieDoUsuniecia.size(); i++ )
         {
-            if ( linia == linieDoUsuniecia[i] )
+            if ( linia == linieDoUsuniecia[i])
             {
                 znalezionaLinia = 1;
             }
@@ -370,7 +370,7 @@ void usunLinieZPliku (int idZalogowanegoUzytkownika)
 
     nowyPlik.close();
     plik.close();
-    remove("KsiazkaAdresowa.txt"); // remove usuwa plik
+    remove("KsiazkaAdresowa.txt"); // remove usuwa plik, aby usunac plik musi byc on zamkniety dotyczy to wszystkich funkcji ktorych sie uzywa
     rename("PlikBezLinii.txt","KsiazkaAdresowa.txt");
 }
 
@@ -382,7 +382,6 @@ void zapiszZnajomychUzytkownikaDoWektora (vector <Znajomy> &znajomi, string lini
     int poczatek = 0 ;
 
     Znajomy pusty;
-
     znajomi.push_back(pusty);
 
     ileZnakowWyjac = 0;
@@ -454,13 +453,12 @@ void wczytajZnajomychZPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkow
                 if (linia[i] == '|')
                 {
                     iloscPionowychKresek++;
-                    wyraz = linia.substr (poczatek,ileZnakowWyjac);
+                    wyraz = linia.substr (poczatek, ileZnakowWyjac);
                     idUzytkownikaZPliku = atoi(wyraz.c_str());
-                    if ( iloscPionowychKresek == 2 &&  idZalogowanegoUzytkownika == idUzytkownikaZPliku)
+                    if ( iloscPionowychKresek == 2 && idZalogowanegoUzytkownika == idUzytkownikaZPliku)
                     {
                         iloscZnajomych++;
                         zapiszZnajomychUzytkownikaDoWektora(znajomi, linia, iloscZnajomych);
-                        //linieDoUsuniecia.push_back(linia);
                         break;
                     }
                     poczatek = poczatek + ileZnakowWyjac + 1;
@@ -469,8 +467,6 @@ void wczytajZnajomychZPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzytkow
         }
         plik.close();
     }
-    //usunLinieZPliku(linieDoUsuniecia);
-    //zapiszDaneZnajomychDoPlikuNaPoczatku(znajomi);
 }
 
 void wyswietlWszystkichZnajomych(vector <Znajomy> &znajomi)
@@ -632,7 +628,6 @@ void usunKontakt (vector <Znajomy> &znajomi)
 {
     int poszukiwanyNumerID;
 
-
     cout << "Wyszukanie znajomego. Podaj numer ID znajomego: ";
     cin >> poszukiwanyNumerID;
 
@@ -652,7 +647,6 @@ void zapiszDaneZnajomychDoPliku(vector <Znajomy> &znajomi, int idZalogowanegoUzy
 {
     fstream plik;
     string liniaZDanymiZnajomego = "";
-
 
     usunLinieZPliku(idZalogowanegoUzytkownika);
 
@@ -797,7 +791,6 @@ int main()
                 break;
             }
         }
-
     }
     return 0;
 }
